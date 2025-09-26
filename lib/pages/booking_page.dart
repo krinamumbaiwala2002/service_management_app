@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'api_service.dart';
+// import 'api_service.dart'; // 🔒 Keep commented until backend is ready
 
 class BookingPage extends StatefulWidget {
   final String userId;
@@ -42,6 +42,32 @@ class _BookingPageState extends State<BookingPage>
 
   Future<void> loadBookings() async {
     setState(() => loading = true);
+
+    await Future.delayed(const Duration(seconds: 1)); // simulate API delay
+
+    // ✅ Dummy data for testing
+    final dummy = [
+      {
+        "service": "Plumber",
+        "provider": "John Doe",
+        "date": "2025-09-28",
+        "time": "10:30 AM"
+      },
+      {
+        "service": "Electrician",
+        "provider": "Jane Smith",
+        "date": "2025-09-29",
+        "time": "2:00 PM"
+      }
+    ];
+
+    setState(() {
+      bookings = dummy;
+      loading = false;
+    });
+
+    // 🔓 Later you can re-enable this
+    /*
     try {
       final data = await ApiService.getUserBookings(widget.userId);
       setState(() {
@@ -54,6 +80,7 @@ class _BookingPageState extends State<BookingPage>
         SnackBar(content: Text("Failed to load bookings: $e")),
       );
     }
+    */
   }
 
   Future<void> _bookNow() async {
@@ -70,6 +97,30 @@ class _BookingPageState extends State<BookingPage>
       return;
     }
 
+    // ✅ Add to dummy list
+    final newBooking = {
+      "service": widget.serviceName!,
+      "provider": widget.providerName!,
+      "date": dateCtrl.text,
+      "time": timeCtrl.text,
+    };
+
+    setState(() {
+      bookings.add(newBooking);
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Booking successful ✅"),
+        backgroundColor: Colors.green,
+      ),
+    );
+
+    // reload bookings list
+    _tabController.animateTo(1); // switch to history tab
+
+    // 🔓 Later enable API
+    /*
     try {
       await ApiService.bookService(
         userId: widget.userId,
@@ -78,22 +129,14 @@ class _BookingPageState extends State<BookingPage>
         date: dateCtrl.text,
         time: timeCtrl.text,
       );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Booking successful ✅"),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      // reload bookings list
       loadBookings();
-      _tabController.animateTo(1); // switch to history tab
+      _tabController.animateTo(1);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Booking failed: $e")),
       );
     }
+    */
   }
 
   Future<void> _pickDate() async {
@@ -123,7 +166,7 @@ class _BookingPageState extends State<BookingPage>
     return Scaffold(
       appBar: AppBar(
         title: const Text("Bookings"),
-        backgroundColor: const Color(0xff284a79),
+        backgroundColor: const Color(0xFFD1C4E9),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [

@@ -20,7 +20,6 @@ class _HomeState extends State<Home> {
   String userName = "Guest";
   String? currentUserId;
   String? profileImage;
-  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -54,8 +53,8 @@ class _HomeState extends State<Home> {
       final dummy = [
         {"title": "Plumber", "icon": "plumbing.png"},
         {"title": "Electrician", "icon": "electrician.png"},
-        {"title": "Tailor", "icon": "tailor.png"},
-        {"title": "Dry Cleaning", "icon": "dryclean.png"},
+        {"title": "Tailor", "icon": "ac.png"},
+        {"title": "Dry Cleaning", "icon": "cleaning.png"},
         {"title": "Painter", "icon": "painting.png"},
         {"title": "Carpenter", "icon": "carpentry.png"},
       ];
@@ -104,7 +103,7 @@ class _HomeState extends State<Home> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => UserProfilePage(userId: currentUserId!), // ✅ FIXED
+          builder: (_) => UserProfilePage(userId: currentUserId!),
         ),
       ).then((_) => loadUser());
     } else {
@@ -124,35 +123,6 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: currentUserId != null
-          ? FloatingActionButton(
-        backgroundColor: Colors.deepPurple,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const ChatScreen()),
-          );
-        },
-        child: const Icon(Icons.chat),
-      )
-          : null,
-      bottomNavigationBar: currentUserId != null
-          ? BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() => _selectedIndex = index);
-          if (index == 2) {
-            _onProfileTap();
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.book_online), label: "Bookings"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-        ],
-      )
-          : null,
       body: Column(
         children: [
           // Header
@@ -161,10 +131,11 @@ class _HomeState extends State<Home> {
                 top: 50, left: 20, right: 20, bottom: 20),
             width: double.infinity,
             decoration: const BoxDecoration(
-              color: Colors.deepPurple,
+              color: Color(0xFFD1C4E9),
               borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(25),
-                  bottomRight: Radius.circular(25)),
+                bottomLeft: Radius.circular(25),
+                bottomRight: Radius.circular(25),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -172,32 +143,46 @@ class _HomeState extends State<Home> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("Hello, $userName",
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18)),
-                    GestureDetector(onTap: _onProfileTap, child: _buildProfileAvatar())
+                    Text(
+                      "Hello, $userName",
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: _onProfileTap,
+                      child: _buildProfileAvatar(),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                const Text("Which service do\nyou need?",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold)),
+                const Text(
+                  "Which service do\nyou need?",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10)),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   child: TextField(
                     controller: searchCtrl,
                     decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        hintText: "Search service or provider",
-                        suffixIcon: Icon(Icons.search, color: Colors.deepPurple)),
+                      border: InputBorder.none,
+                      hintText: "Search service or provider",
+                      suffixIcon: Icon(
+                        Icons.search,
+                        color: Colors.deepPurple,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -212,10 +197,11 @@ class _HomeState extends State<Home> {
               padding: const EdgeInsets.all(16),
               gridDelegate:
               const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 1.1),
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1.1,
+              ),
               itemCount: filtered.length,
               itemBuilder: (context, index) {
                 final s = filtered[index];
@@ -243,42 +229,53 @@ class _HomeState extends State<Home> {
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                        color: Colors.purple.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: const [
-                          BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 4,
-                              offset: Offset(2, 2))
-                        ]),
+                      color: Colors.purple.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 4,
+                          offset: Offset(2, 2),
+                        )
+                      ],
+                    ),
                     child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          if (icon.isNotEmpty)
-                            Image.asset(
-                              "assets/images/$icon",
-                              height: 56,
-                              width: 56,
-                              fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) =>
-                              const Icon(Icons.build,
-                                  size: 48, color: Colors.deepPurple),
-                            )
-                          else
-                            const Icon(Icons.build,
-                                size: 48, color: Colors.deepPurple),
-                          const SizedBox(height: 8),
-                          Text(title,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                  color: Color(0xff284a79),
-                                  fontWeight: FontWeight.bold)),
-                        ]),
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (icon.isNotEmpty)
+                          Image.asset(
+                            "assets/images/$icon",
+                            height: 56,
+                            width: 56,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => const Icon(
+                              Icons.build,
+                              size: 48,
+                              color: Colors.deepPurple,
+                            ),
+                          )
+                        else
+                          const Icon(
+                            Icons.build,
+                            size: 48,
+                            color: Colors.deepPurple,
+                          ),
+                        const SizedBox(height: 8),
+                        Text(
+                          title,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Color(0xff284a79),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
             ),
-          )
+          ),
         ],
       ),
     );

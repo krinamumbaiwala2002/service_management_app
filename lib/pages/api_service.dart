@@ -13,6 +13,7 @@ List<Map<String, dynamic>> _dummyBookings = [
     "provider": "Ramesh Patel",
     "date": "2025-09-25",
     "time": "10:00 AM",
+    "userId": "1",
   },
   {
     "id": "BKG2",
@@ -20,6 +21,7 @@ List<Map<String, dynamic>> _dummyBookings = [
     "provider": "Suresh Kumar",
     "date": "2025-09-26",
     "time": "02:30 PM",
+    "userId": "1",
   },
 ];
 
@@ -86,6 +88,9 @@ class ApiService {
       {"title": "Electrician", "icon": "electrician.png"},
       {"title": "Carpenter", "icon": "carpentry.png"},
       {"title": "Painter", "icon": "painting.png"},
+      {"title": "Electrician", "icon": "cleaning.png"},
+      {"title": "Carpenter", "icon": "ac.png"},
+      {"title": "Painter", "icon": "laundry.png"},
     ];
   }
 
@@ -95,22 +100,84 @@ class ApiService {
   static Future<List<Map<String, dynamic>>> getProvidersForService(
       String serviceName) async {
     await Future.delayed(const Duration(milliseconds: 500));
+
     final dummy = {
       "Plumber": [
-        {"id": "1", "name": "Ramesh Patel", "phone": "9876543210"},
-        {"id": "2", "name": "Ankit Sharma", "phone": "9123456780"},
+        {
+          "id": "1",
+          "name": "Ramesh Patel",
+          "phone": "9876543210",
+          "address": "Vesu, VIP Road, Surat, Gujarat",
+          "available": true,
+          "availableDate": "2025-09-24",
+          "notAvailableTime": "6:30 PM",
+          "rating": 4.5,
+          "reviews": 47,
+        },
+        {
+          "id": "2",
+          "name": "Ankit Sharma",
+          "phone": "9123456780",
+          "address": "Adajan, Surat, Gujarat",
+          "available": false,
+          "availableDate": "2025-09-25",
+          "notAvailableTime": "11:00 AM",
+          "rating": 4.0,
+          "reviews": 32,
+        },
       ],
       "Electrician": [
-        {"id": "3", "name": "Suresh Kumar", "phone": "9876501234"},
-        {"id": "4", "name": "Mukesh Singh", "phone": "9988776655"},
+        {
+          "id": "3",
+          "name": "Suresh Kumar",
+          "phone": "9876501234",
+          "address": "Nanpura, Surat, Gujarat",
+          "available": true,
+          "availableDate": "2025-09-24",
+          "notAvailableTime": "5:00 PM",
+          "rating": 4.2,
+          "reviews": 20,
+        },
+        {
+          "id": "4",
+          "name": "Mukesh Singh",
+          "phone": "9988776655",
+          "address": "Athwa, Surat, Gujarat",
+          "available": false,
+          "availableDate": "2025-09-26",
+          "notAvailableTime": "10:30 AM",
+          "rating": 3.8,
+          "reviews": 15,
+        },
       ],
       "Carpenter": [
-        {"id": "5", "name": "Rajiv Mehta", "phone": "9911223344"},
+        {
+          "id": "5",
+          "name": "Rajiv Mehta",
+          "phone": "9911223344",
+          "address": "Varachha, Surat, Gujarat",
+          "available": true,
+          "availableDate": "2025-09-27",
+          "notAvailableTime": "9:00 AM",
+          "rating": 4.7,
+          "reviews": 52,
+        },
       ],
       "Painter": [
-        {"id": "6", "name": "Vinod Gupta", "phone": "9001122334"},
+        {
+          "id": "6",
+          "name": "Vinod Gupta",
+          "phone": "9001122334",
+          "address": "Katargam, Surat, Gujarat",
+          "available": false,
+          "availableDate": "2025-09-28",
+          "notAvailableTime": "2:00 PM",
+          "rating": 4.3,
+          "reviews": 28,
+        },
       ],
     };
+
     return dummy[serviceName] ?? [];
   }
 
@@ -143,13 +210,16 @@ class ApiService {
   static Future<List<Map<String, dynamic>>> getUserBookings(
       String userId) async {
     await Future.delayed(const Duration(milliseconds: 500));
-    return List<Map<String, dynamic>>.from(_dummyBookings);
+    return _dummyBookings
+        .where((b) => b["userId"] == userId) // ✅ filter by userId
+        .toList();
   }
 
   /// -------------------------------
   /// Cancel Booking
   /// -------------------------------
-  static Future<Map<String, dynamic>> cancelBooking(String bookingId) async {
+  static Future<Map<String, dynamic>> cancelBooking(
+      String bookingId) async {
     await Future.delayed(const Duration(milliseconds: 500));
     _dummyBookings.removeWhere((b) => b["id"] == bookingId);
     return {

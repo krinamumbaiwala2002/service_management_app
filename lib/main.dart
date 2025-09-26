@@ -4,6 +4,7 @@ import 'pages/home.dart';
 import 'pages/booking_page.dart';
 import 'pages/user_profile.dart';
 import 'pages/login.dart';
+import 'pages/chat_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,7 +34,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
   String? currentUserId;
-  List<Widget>? _pages; // nullable instead of late
+  List<Widget>? _pages;
 
   @override
   void initState() {
@@ -59,15 +60,13 @@ class _MainPageState extends State<MainPage> {
 
   void _onItemTapped(int index) async {
     if ((index == 1 || index == 2) && currentUserId == null) {
-      // Require login for Bookings & Profile
       await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const LoginPage()),
       );
-      loadUser(); // reload after login
+      loadUser();
       return;
     }
-
     setState(() {
       _selectedIndex = index;
     });
@@ -76,7 +75,6 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     if (_pages == null) {
-      // Show loading screen until _pages initialized
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
@@ -90,18 +88,10 @@ class _MainPageState extends State<MainPage> {
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book_online),
-            label: "Bookings",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "Profile",
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.book_online), label: "Bookings"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: "Chat"),
         ],
       ),
     );
