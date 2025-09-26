@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
 import 'service_providers_page.dart';
 import 'chat_screen.dart';
 import 'user_profile.dart';
+import 'login.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -15,7 +17,10 @@ class _HomeState extends State<Home> {
   List<Map<String, dynamic>> filtered = [];
   bool isLoading = true;
   final TextEditingController searchCtrl = TextEditingController();
-  String userName = "User";
+  String userName = "Guest";
+  String? currentUserId;
+  String? profileImage;
+  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -26,7 +31,14 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> loadUser() async {
-    setState(() => userName = "Kinjal"); // Mocked user name
+    final prefs = await SharedPreferences.getInstance();
+    String? id = prefs.getString("userId");
+
+    setState(() {
+      currentUserId = id;
+      userName = id != null ? "Kinjal" : "Guest";
+      profileImage = prefs.getString("profileImage");
+    });
   }
 
   Future<void> loadServices() async {
@@ -38,9 +50,20 @@ class _HomeState extends State<Home> {
         filtered = data;
         isLoading = false;
       });
-    } catch (e) {
-      setState(() => isLoading = false);
-      debugPrint("Error loading services: $e");
+    } catch (_) {
+      final dummy = [
+        {"title": "Plumber", "icon": "plumbing.png"},
+        {"title": "Electrician", "icon": "electrician.png"},
+        {"title": "Tailor", "icon": "tailor.png"},
+        {"title": "Dry Cleaning", "icon": "dryclean.png"},
+        {"title": "Painter", "icon": "painting.png"},
+        {"title": "Carpenter", "icon": "carpentry.png"},
+      ];
+      setState(() {
+        services = dummy;
+        filtered = dummy;
+        isLoading = false;
+      });
     }
   }
 
@@ -55,6 +78,43 @@ class _HomeState extends State<Home> {
     }
   }
 
+  Widget _buildProfileAvatar() {
+    if (currentUserId != null) {
+      if (profileImage != null && profileImage!.isNotEmpty) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(50),
+          child: Image.asset(
+            profileImage!,
+            height: 40,
+            width: 40,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => const Icon(Icons.person),
+          ),
+        );
+      } else {
+        return const CircleAvatar(child: Icon(Icons.person), radius: 20);
+      }
+    } else {
+      return const CircleAvatar(child: Icon(Icons.person_outline), radius: 20);
+    }
+  }
+
+  void _onProfileTap() {
+    if (currentUserId != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => UserProfilePage(userId: currentUserId!), // ✅ FIXED
+        ),
+      ).then((_) => loadUser());
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+      ).then((_) => loadUser());
+    }
+  }
+
   @override
   void dispose() {
     searchCtrl.dispose();
@@ -64,26 +124,47 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xff69cae8),
+      floatingActionButton: currentUserId != null
+          ? FloatingActionButton(
+        backgroundColor: Colors.deepPurple,
         onPressed: () {
           Navigator.push(
-              context, MaterialPageRoute(builder: (_) => const ChatScreen()));
+            context,
+            MaterialPageRoute(builder: (_) => const ChatScreen()),
+          );
         },
         child: const Icon(Icons.chat),
-      ),
+      )
+          : null,
+      bottomNavigationBar: currentUserId != null
+          ? BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() => _selectedIndex = index);
+          if (index == 2) {
+            _onProfileTap();
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.book_online), label: "Bookings"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+        ],
+      )
+          : null,
       body: Column(
         children: [
           // Header
           Container(
-            padding:
-            const EdgeInsets.only(top: 50, left: 20, right: 20, bottom: 20),
+            padding: const EdgeInsets.only(
+                top: 50, left: 20, right: 20, bottom: 20),
             width: double.infinity,
             decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xffe1e8eb), Color(0xffc5e3f4)],
-                begin: Alignment.bottomLeft,
-              ),
+              color: Colors.deepPurple,
+              borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(25),
+                  bottomRight: Radius.circular(25)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,37 +174,16 @@ class _HomeState extends State<Home> {
                   children: [
                     Text("Hello, $userName",
                         style: const TextStyle(
-                            color: Colors.orange,
+                            color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 18)),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                            const UserProfilePage(userId: "123"),
-                          ),
-                        );
-                      },
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(50),
-                        child: Image.asset(
-                          "assets/images/girl.jpg",
-                          height: 50,
-                          width: 50,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                          const Icon(Icons.person),
-                        ),
-                      ),
-                    )
+                    GestureDetector(onTap: _onProfileTap, child: _buildProfileAvatar())
                   ],
                 ),
                 const SizedBox(height: 12),
                 const Text("Which service do\nyou need?",
                     style: TextStyle(
-                        color: Color(0xff284a79),
+                        color: Colors.white,
                         fontSize: 25,
                         fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
@@ -137,8 +197,7 @@ class _HomeState extends State<Home> {
                     decoration: const InputDecoration(
                         border: InputBorder.none,
                         hintText: "Search service or provider",
-                        suffixIcon:
-                        Icon(Icons.search, color: Color(0xff284a79))),
+                        suffixIcon: Icon(Icons.search, color: Colors.deepPurple)),
                   ),
                 ),
               ],
@@ -164,19 +223,27 @@ class _HomeState extends State<Home> {
                 final title = s['title'] as String? ?? '';
                 return InkWell(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ServiceProvidersPage(
-                          serviceName: title, // ✅ fixed
-                          userId: "user_001", // ✅ temp hardcoded
+                    if (currentUserId != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ServiceProvidersPage(
+                            serviceName: title,
+                            userId: currentUserId!,
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const LoginPage()),
+                      ).then((_) => loadUser());
+                    }
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Colors.purple.shade50,
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: const [
                           BoxShadow(
@@ -195,11 +262,11 @@ class _HomeState extends State<Home> {
                               fit: BoxFit.contain,
                               errorBuilder: (_, __, ___) =>
                               const Icon(Icons.build,
-                                  size: 48, color: Colors.blue),
+                                  size: 48, color: Colors.deepPurple),
                             )
                           else
                             const Icon(Icons.build,
-                                size: 48, color: Colors.blue),
+                                size: 48, color: Colors.deepPurple),
                           const SizedBox(height: 8),
                           Text(title,
                               textAlign: TextAlign.center,

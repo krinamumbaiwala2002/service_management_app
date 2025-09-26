@@ -1,96 +1,161 @@
-import 'dart:async';
+// lib/api_service.dart
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
 
-/// Mock API Service for testing frontend without backend.
-/// Later you can replace these with real API calls using http.
+/// -------------------------------
+/// Dummy in-memory bookings list
+/// -------------------------------
+List<Map<String, dynamic>> _dummyBookings = [
+  {
+    "id": "BKG1",
+    "service": "Plumber",
+    "provider": "Ramesh Patel",
+    "date": "2025-09-25",
+    "time": "10:00 AM",
+  },
+  {
+    "id": "BKG2",
+    "service": "Electrician",
+    "provider": "Suresh Kumar",
+    "date": "2025-09-26",
+    "time": "02:30 PM",
+  },
+];
+
 class ApiService {
-  /// -------- Authentication --------
-  static Future<Map<String, dynamic>> signup(Map<String, dynamic> data) async {
-    await Future.delayed(const Duration(milliseconds: 800));
-    return {
-      "token": "dummy_token_123",
-      "id": "user_001",
-      "email": data['email'],
-      "name": data['name'] ?? "New User"
-    };
-  }
+  static const String BASE_URL = "http://your-backend-url.com/api"; // 👈 replace later
 
+  /// -------------------------------
+  /// Dummy Login
+  /// -------------------------------
   static Future<Map<String, dynamic>> login(
-      String email, String password) async {
-    await Future.delayed(const Duration(milliseconds: 800));
+      String phone, String password) async {
+    await Future.delayed(const Duration(seconds: 1)); // simulate delay
 
-    if (email == "test@example.com" && password == "123456") {
-      return {"token": "dummy_token_123", "id": "user_001", "email": email};
+    // ✅ Dummy credentials
+    if (phone == "1234567890" && password == "password") {
+      return {
+        "token": "dummy_token_123",
+        "id": "1",
+        "name": "Demo User",
+        "phone": phone,
+        "email": "demo@example.com",
+      };
     } else {
-      throw Exception("Invalid credentials (use test@example.com / 123456)");
+      throw Exception("Invalid phone or password");
     }
   }
 
-  /// -------- Services --------
-  static Future<List<Map<String, dynamic>>> getServices() async {
-    await Future.delayed(const Duration(milliseconds: 600));
-    return [
-      {"id": "s1", "title": "Plumbing", "icon": "plumbing.png"},
-      {"id": "s2", "title": "Laundry", "icon": "laundry.png"},
-      {"id": "s3", "title": "Painting", "icon": "painting.png"},
-      {"id": "s4", "title": "Electrician", "icon": "electrician.png"},
-      {"id": "s5", "title": "Cleaning", "icon": "cleaning.png"},
-      {"id": "s6", "title": "AC Service", "icon": "ac.png"},
-      {"id": "s7", "title": "Carpentry", "icon": "carpentry.png"},
-      {"id": "s8", "title": "Repairing", "icon": "repairing.png"},
-    ];
-  }
+  /// -------------------------------
+  /// Dummy Signup
+  /// -------------------------------
+  static Future<Map<String, dynamic>> signup(
+      Map<String, dynamic> userData, {File? profileImage}) async {
+    await Future.delayed(const Duration(seconds: 1)); // simulate delay
 
-  /// -------- Providers --------
-  static Future<List<Map<String, dynamic>>> getProvidersForService(
-      String serviceName) async {
-    await Future.delayed(const Duration(milliseconds: 600));
-    final allProviders = [
-      {"service": "Plumbing", "name": "WaterFix Plumbers", "phone": "9222222222"},
-      {"service": "Laundry", "name": "Quick Wash Laundry", "phone": "9876512345"},
-      {"service": "Painting", "name": "Royal Colors", "phone": "9777777777"},
-      {"service": "Electrician", "name": "PowerUp Electricians", "phone": "9777771234"},
-      {"service": "Cleaning", "name": "Superfast Cleaning", "phone": "9100071234"},
-      {"service": "AC Service", "name": "CoolCare AC", "phone": "9888881234"},
-      {"service": "Carpentry", "name": "Unique Carpentry", "phone": "9555571234"},
-      {"service": "Repairing", "name": "Solution Repairing", "phone": "9733771234"},
-    ];
-
-    return allProviders.where((p) => p['service'] == serviceName).toList();
-  }
-
-  /// -------- Bookings --------
-  static Future<bool> bookService(Map<String, dynamic> bookingData) async {
-    await Future.delayed(const Duration(milliseconds: 600));
-    return true; // Always success for now
-  }
-
-  /// -------- User Profile --------
-  static Future<Map<String, dynamic>> getUserProfile(String userId) async {
-    await Future.delayed(const Duration(milliseconds: 400));
     return {
-      "id": userId,
-      "name": "Kinjal Mumbaiwala",
-      "email": "kinjal@example.com",
-      "phone": "9876543210"
+      "token": "dummy_signup_token_456",
+      "id": "2",
+      "name": userData['name'] ?? "New User",
+      "phone": userData['phone'] ?? "0000000000",
+      "email": userData['email'] ?? "new@example.com",
     };
   }
 
+  /// -------------------------------
+  /// Get User Profile
+  /// -------------------------------
+  static Future<Map<String, dynamic>> getUserProfile(String userId) async {
+    await Future.delayed(const Duration(milliseconds: 500)); // simulate delay
+    return {
+      "id": userId,
+      "name": "Demo User",
+      "phone": "9999999999",
+      "email": "demo@example.com",
+    };
+  }
+
+  /// -------------------------------
+  /// Get Services
+  /// -------------------------------
+  static Future<List<Map<String, dynamic>>> getServices() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return [
+      {"title": "Plumber", "icon": "plumbing.png"},
+      {"title": "Electrician", "icon": "electrician.png"},
+      {"title": "Carpenter", "icon": "carpentry.png"},
+      {"title": "Painter", "icon": "painting.png"},
+    ];
+  }
+
+  /// -------------------------------
+  /// Get Providers for a Service
+  /// -------------------------------
+  static Future<List<Map<String, dynamic>>> getProvidersForService(
+      String serviceName) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    final dummy = {
+      "Plumber": [
+        {"id": "1", "name": "Ramesh Patel", "phone": "9876543210"},
+        {"id": "2", "name": "Ankit Sharma", "phone": "9123456780"},
+      ],
+      "Electrician": [
+        {"id": "3", "name": "Suresh Kumar", "phone": "9876501234"},
+        {"id": "4", "name": "Mukesh Singh", "phone": "9988776655"},
+      ],
+      "Carpenter": [
+        {"id": "5", "name": "Rajiv Mehta", "phone": "9911223344"},
+      ],
+      "Painter": [
+        {"id": "6", "name": "Vinod Gupta", "phone": "9001122334"},
+      ],
+    };
+    return dummy[serviceName] ?? [];
+  }
+
+  /// -------------------------------
+  /// Book Service
+  /// -------------------------------
+  static Future<Map<String, dynamic>> bookService({
+    required String userId,
+    required String providerName,
+    required String serviceName,
+    required String date,
+    required String time,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    final newBooking = {
+      "id": "BKG${_dummyBookings.length + 1}",
+      "userId": userId,
+      "provider": providerName,
+      "service": serviceName,
+      "date": date,
+      "time": time,
+    };
+    _dummyBookings.add(newBooking);
+    return {"success": true, "booking": newBooking};
+  }
+
+  /// -------------------------------
+  /// Get User Bookings
+  /// -------------------------------
   static Future<List<Map<String, dynamic>>> getUserBookings(
       String userId) async {
-    await Future.delayed(const Duration(milliseconds: 400));
-    return [
-      {
-        "service": "Plumbing",
-        "provider": "WaterFix Plumbers",
-        "date": "2025-09-20",
-        "time": "10:00 AM"
-      },
-      {
-        "service": "Laundry",
-        "provider": "Quick Wash Laundry",
-        "date": "2025-09-22",
-        "time": "2:00 PM"
-      },
-    ];
+    await Future.delayed(const Duration(milliseconds: 500));
+    return List<Map<String, dynamic>>.from(_dummyBookings);
+  }
+
+  /// -------------------------------
+  /// Cancel Booking
+  /// -------------------------------
+  static Future<Map<String, dynamic>> cancelBooking(String bookingId) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    _dummyBookings.removeWhere((b) => b["id"] == bookingId);
+    return {
+      "success": true,
+      "cancelledBookingId": bookingId,
+      "message": "Booking cancelled successfully",
+    };
   }
 }

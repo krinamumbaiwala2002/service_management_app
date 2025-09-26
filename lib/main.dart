@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/home.dart';
 import 'pages/booking_page.dart';
 import 'pages/user_profile.dart';
+import 'pages/login.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,14 +32,42 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
+  String? currentUserId;
+  List<Widget>? _pages; // nullable instead of late
 
-  final List<Widget> _pages = [
-    const Home(),
-    const BookingPage(userId: "user_001"),
-    const UserProfilePage(userId: "user_001"),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    loadUser();
+  }
 
-  void _onItemTapped(int index) {
+  Future<void> loadUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? id = prefs.getString("userId");
+
+    setState(() {
+      currentUserId = id;
+      _pages = [
+        const Home(),
+        BookingPage(userId: currentUserId ?? ""),
+        currentUserId != null
+            ? UserProfilePage(userId: currentUserId!)
+            : const LoginPage(),
+      ];
+    });
+  }
+
+  void _onItemTapped(int index) async {
+    if ((index == 1 || index == 2) && currentUserId == null) {
+      // Require login for Bookings & Profile
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+      );
+      loadUser(); // reload after login
+      return;
+    }
+
     setState(() {
       _selectedIndex = index;
     });
@@ -45,8 +75,15 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_pages == null) {
+      // Show loading screen until _pages initialized
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: _pages![_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
