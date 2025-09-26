@@ -232,33 +232,33 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                         const SizedBox(height: 14),
 
-                        // Profile image upload
-                        InkWell(
-                          onTap: pickImage,
-                          child: Container(
-                            height: 120,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.grey.shade400),
-                            ),
-                            child: profileImage == null
-                                ? const Center(
-                              child: Text(
-                                "Upload Profile Picture",
-                                style: TextStyle(color: Colors.black54),
-                              ),
-                            )
-                                : ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.file(
-                                profileImage!,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                        ),
+                        // // Profile image upload
+                        // InkWell(
+                        //   onTap: pickImage,
+                        //   child: Container(
+                        //     height: 120,
+                        //     width: double.infinity,
+                        //     decoration: BoxDecoration(
+                        //       color: Colors.white,
+                        //       borderRadius: BorderRadius.circular(12),
+                        //       border: Border.all(color: Colors.grey.shade400),
+                        //     ),
+                        //     child: profileImage == null
+                        //         ? const Center(
+                        //       child: Text(
+                        //         "Upload Profile Picture",
+                        //         style: TextStyle(color: Colors.black54),
+                        //       ),
+                        //     )
+                        //         : ClipRRect(
+                        //       borderRadius: BorderRadius.circular(12),
+                        //       child: Image.file(
+                        //         profileImage!,
+                        //         fit: BoxFit.cover,
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
                         const SizedBox(height: 14),
                       ],
 
