@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
 import 'service_providers_page.dart';
-import 'chat_screen.dart';
-import 'user_profile.dart';
 import 'login.dart';
 
 class Home extends StatefulWidget {
@@ -19,7 +17,6 @@ class _HomeState extends State<Home> {
   final TextEditingController searchCtrl = TextEditingController();
   String userName = "Guest";
   String? currentUserId;
-  String? profileImage;
 
   @override
   void initState() {
@@ -36,7 +33,6 @@ class _HomeState extends State<Home> {
     setState(() {
       currentUserId = id;
       userName = id != null ? "Kinjal" : "Guest";
-      profileImage = prefs.getString("profileImage");
     });
   }
 
@@ -77,43 +73,6 @@ class _HomeState extends State<Home> {
     }
   }
 
-  Widget _buildProfileAvatar() {
-    if (currentUserId != null) {
-      if (profileImage != null && profileImage!.isNotEmpty) {
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(50),
-          child: Image.asset(
-            profileImage!,
-            height: 40,
-            width: 40,
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => const Icon(Icons.person),
-          ),
-        );
-      } else {
-        return const CircleAvatar(child: Icon(Icons.person), radius: 20);
-      }
-    } else {
-      return const CircleAvatar(child: Icon(Icons.person_outline), radius: 20);
-    }
-  }
-
-  void _onProfileTap() {
-    if (currentUserId != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => UserProfilePage(userId: currentUserId!),
-        ),
-      ).then((_) => loadUser());
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginPage()),
-      ).then((_) => loadUser());
-    }
-  }
-
   @override
   void dispose() {
     searchCtrl.dispose();
@@ -151,9 +110,13 @@ class _HomeState extends State<Home> {
                         fontSize: 18,
                       ),
                     ),
-                    GestureDetector(
-                      onTap: _onProfileTap,
-                      child: _buildProfileAvatar(),
+
+                    /// 👉 App Logo on Right Side
+                    Image.asset(
+                      "assets/images/logo.png", // replace with your logo path
+                      height: 50,
+                      width: 50,
+                      fit: BoxFit.contain,
                     ),
                   ],
                 ),
@@ -177,7 +140,7 @@ class _HomeState extends State<Home> {
                     controller: searchCtrl,
                     decoration: const InputDecoration(
                       border: InputBorder.none,
-                      hintText: "Search service or provider",
+                      hintText: "Search Services",
                       suffixIcon: Icon(
                         Icons.search,
                         color: Colors.deepPurple,

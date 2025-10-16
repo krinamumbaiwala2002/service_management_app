@@ -63,24 +63,24 @@ class _ServiceProvidersPageState extends State<ServiceProvidersPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header with logo + name
-              Column(
-                children: [
-                  Image.asset(
-                    "assets/images/logo.png",
-                    height: 50,
-                    width: 50,
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    "WorkNest",
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: Colors.deepPurple,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
+          Row(
+          children: [
+          Image.asset(
+            "assets/images/logo.png",
+            height: 70,
+            width: 70,
+          ),
+          const SizedBox(width: 8), // space between logo & text
+          const Text(
+            "WorkNest",
+            style: TextStyle(
+              fontSize: 25,
+              fontWeight: FontWeight.bold,
+              color: Colors.deepPurple,
+            ),
+          ),
+          ],
+        ),
               const SizedBox(height: 12),
 
               // Search bar
@@ -126,6 +126,8 @@ class _ServiceProvidersPageState extends State<ServiceProvidersPage> {
                         title: Text(provider["name"],
                             style: const TextStyle(
                                 fontWeight: FontWeight.bold)),
+                        trailing: const Icon(Icons.email,
+                            color: Colors.black, size: 32),
                         subtitle: Row(
                           children: [
                             const Icon(Icons.phone, size: 14),

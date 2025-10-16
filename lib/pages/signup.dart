@@ -1,12 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:service_management_app/pages/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'api_service.dart';
 import 'home.dart';
 
 class SignUpPage extends StatefulWidget {
-  const SignUpPage({super.key});
+  const SignUpPage({super.key}); // ✅ No args needed
 
   @override
   State<SignUpPage> createState() => _SignUpPageState();
@@ -135,8 +136,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
                 // Role selector chips
                 Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   decoration: BoxDecoration(
                     color: const Color(0xFFD1C4E9),
                     borderRadius: BorderRadius.circular(20),
@@ -150,9 +150,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         selectedColor: Colors.deepPurple,
                         backgroundColor: Colors.white,
                         labelStyle: TextStyle(
-                          color: role == "customer"
-                              ? Colors.white
-                              : Colors.black,
+                          color: role == "customer" ? Colors.white : Colors.black,
                         ),
                         onSelected: (_) => setState(() => role = "customer"),
                       ),
@@ -163,8 +161,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         selectedColor: Colors.deepPurple,
                         backgroundColor: Colors.white,
                         labelStyle: TextStyle(
-                          color:
-                          role == "worker" ? Colors.white : Colors.black,
+                          color: role == "worker" ? Colors.white : Colors.black,
                         ),
                         onSelected: (_) => setState(() => role = "worker"),
                       ),
@@ -231,35 +228,6 @@ class _SignUpPageState extends State<SignUpPage> {
                           decoration: _inputDecoration("Charges per hour"),
                         ),
                         const SizedBox(height: 14),
-
-                        // // Profile image upload
-                        // InkWell(
-                        //   onTap: pickImage,
-                        //   child: Container(
-                        //     height: 120,
-                        //     width: double.infinity,
-                        //     decoration: BoxDecoration(
-                        //       color: Colors.white,
-                        //       borderRadius: BorderRadius.circular(12),
-                        //       border: Border.all(color: Colors.grey.shade400),
-                        //     ),
-                        //     child: profileImage == null
-                        //         ? const Center(
-                        //       child: Text(
-                        //         "Upload Profile Picture",
-                        //         style: TextStyle(color: Colors.black54),
-                        //       ),
-                        //     )
-                        //         : ClipRRect(
-                        //       borderRadius: BorderRadius.circular(12),
-                        //       child: Image.file(
-                        //         profileImage!,
-                        //         fit: BoxFit.cover,
-                        //       ),
-                        //     ),
-                        //   ),
-                        // ),
-                        const SizedBox(height: 14),
                       ],
 
                       // Submit button
@@ -290,6 +258,26 @@ class _SignUpPageState extends State<SignUpPage> {
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // ✅ Already have an account link
+                      InkWell(
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginPage()),
+                          );
+                        },
+                        child: const Text(
+                          "Already have an account? Log in",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepPurple,
                           ),
                         ),
                       ),

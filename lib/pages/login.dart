@@ -60,6 +60,7 @@ class _LoginPageState extends State<LoginPage> {
         child: Stack(
           children: [
             // Skip button top right
+            // Skip button top right
             Positioned(
               top: 15,
               right: 20,

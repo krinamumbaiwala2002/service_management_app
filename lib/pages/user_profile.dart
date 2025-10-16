@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'api_service.dart';
+import 'edit_profile.dart';
 import 'home.dart';
-import 'home.dart' show AppHeader; // ✅ Import reusable header
+import 'api_service.dart';
+import 'address_page.dart';
+import 'booking_page.dart';
+import 'payment_history_page.dart';
+import 'change_password_page.dart';
+import 'my_rating_page.dart';
+import 'chat_screen.dart';
 
 class UserProfilePage extends StatefulWidget {
   final String userId;
-  const UserProfilePage({super.key, required this.userId});
+  final String role;
+  const UserProfilePage({super.key, required this.userId, required this.role});
 
   @override
   State<UserProfilePage> createState() => _UserProfilePageState();
@@ -14,60 +21,26 @@ class UserProfilePage extends StatefulWidget {
 
 class _UserProfilePageState extends State<UserProfilePage> {
   Map<String, dynamic>? profile;
-  List<Map<String, dynamic>> bookings = [];
-  bool loadingProfile = true;
-  bool loadingBookings = true;
-
-  final TextEditingController searchCtrl = TextEditingController();
+  bool loading = true;
 
   @override
   void initState() {
     super.initState();
-    loadProfile(widget.userId);
-    loadBookings(widget.userId);
+    loadProfile();
   }
 
-  // Load user profile
-  Future<void> loadProfile(String id) async {
-    setState(() => loadingProfile = true);
+  Future<void> loadProfile() async {
+    setState(() => loading = true);
     try {
-      final data = await ApiService.getUserProfile(id);
-      setState(() {
-        profile = data;
-        loadingProfile = false;
-      });
+      profile = widget.role == "worker"
+          ? await ApiService.getWorkerProfile(widget.userId)
+          : await ApiService.getUserProfile(widget.userId);
     } catch (e) {
-      setState(() => loadingProfile = false);
-      debugPrint("Error loading profile: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load profile')),
-        );
-      }
+      debugPrint("Error: $e");
     }
+    setState(() => loading = false);
   }
 
-  // Load bookings
-  Future<void> loadBookings(String id) async {
-    setState(() => loadingBookings = true);
-    try {
-      final data = await ApiService.getUserBookings(id);
-      setState(() {
-        bookings = data;
-        loadingBookings = false;
-      });
-    } catch (e) {
-      setState(() => loadingBookings = false);
-      debugPrint("Error loading bookings: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load bookings')),
-        );
-      }
-    }
-  }
-
-  // Logout: clear saved data and go Home
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
@@ -80,113 +53,182 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
-  Widget _buildProfileAvatar() {
-    if (profile != null && profile!['name'] != null) {
-      return CircleAvatar(
-        child: Text(profile!['name'][0]),
-      );
-    }
-    return const CircleAvatar(child: Icon(Icons.person_outline));
-  }
-
-  void _onProfileTap() {
-    // Already on profile, maybe show logout menu or refresh
-    logout();
-  }
-
-  void _applySearch(String q) {
-    // You may later filter bookings based on search
-    debugPrint("Search query: $q");
+  Widget _option(IconData icon, String text, {VoidCallback? onTap}) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.black),
+      title: Text(text, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+      onTap: onTap,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    if (loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+
+    final name = profile?['name'] ?? '';
+    final email = profile?['email'] ?? '';
+    final isWorker = widget.role == "worker";
+
     return Scaffold(
-      body: Column(
-        children: [
-          // /// ✅ Reusable Header
-          // AppHeader(
-          //   userName: profile?['name'] ?? "User",
-          //   onProfileTap: _onProfileTap,
-          //   profileAvatar: _buildProfileAvatar(),
-          //   searchCtrl: searchCtrl,
-          //   onSearchChanged: _applySearch,
-          // ),
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(height: 50),
+            Image.asset("assets/images/logo.png", height: 60, width: 60),
+            const Text("WorkNest",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.deepPurple)),
+            const SizedBox(height: 20),
 
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Profile Info
-                  const Text("Profile",
-                      style:
-                      TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  loadingProfile
-                      ? const Center(child: CircularProgressIndicator())
-                      : profile == null
-                      ? const Text("No profile data")
-                      : Card(
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        child: Text(profile!['name']?[0] ?? "U"),
-                      ),
-                      title: Text(profile!['name'] ?? "Unknown User"),
-                      subtitle:
-                      Text(profile!['email'] ?? "No Email"),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Bookings
-                  const Text("My Bookings",
-                      style:
-                      TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  loadingBookings
-                      ? const Center(child: CircularProgressIndicator())
-                      : bookings.isEmpty
-                      ? const Text("No bookings yet")
-                      : ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: bookings.length,
-                    itemBuilder: (context, index) {
-                      final b = bookings[index];
-                      return Card(
-                        margin:
-                        const EdgeInsets.symmetric(vertical: 6),
-                        child: ListTile(
-                          title: Text(
-                              "${b['service']} - ${b['provider']}"),
-                          subtitle: Text(
-                              "Date: ${b['date']} | Time: ${b['time']}\nAddress: ${b['address'] ?? 'N/A'}"),
+            // =========================
+            // Worker Layout
+            // =========================
+            if (isWorker) ...[
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                    color: Colors.grey.shade200, borderRadius: BorderRadius.circular(12)),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text("Hello, $name",
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          Text(email,
+                              style: const TextStyle(fontSize: 13, color: Colors.black54)),
+                        ]),
+                        ElevatedButton.icon(
+                          onPressed: () async {
+                            if (profile == null) return;
+                            final updated = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => EditProfilePage(profile: profile!),
+                              ),
+                            );
+                            if (updated != null) setState(() => profile = updated);
+                          },
+                          icon: const Icon(Icons.edit, size: 16),
+                          label: const Text("Edit"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            foregroundColor: Colors.white,
+                            padding:
+                            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          ),
                         ),
-                      );
-                    },
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Logout Button
-                  Center(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: logout,
-                      icon: const Icon(Icons.logout),
-                      label: const Text("Logout"),
+                      ],
                     ),
-                  )
-                ],
+                    const SizedBox(height: 16),
+                    _option(Icons.credit_card, "Payment history",
+                        onTap: () => Navigator.push(context,
+                            MaterialPageRoute(builder: (_) => const PaymentHistoryPage(userId: '',)))),
+                    _option(Icons.location_on, "Address",
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => AddressPage(userId: widget.userId)))),
+                    _option(Icons.history, "Booking history",
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => BookingPage(userId: widget.userId)))),
+                    _option(Icons.star, "My rating",
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const MyRatingPage(workerId: '',)))),
+                    _option(Icons.lock, "Password",
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const ChangePasswordPage(userId: '',)))),
+                    _option(Icons.logout, "Logout", onTap: logout),
+                  ],
+                ),
               ),
-            ),
-          ),
-        ],
+            ],
+
+            // =========================
+            // Normal User Layout
+            // =========================
+            if (!isWorker) ...[
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                    color: Colors.grey.shade200, borderRadius: BorderRadius.circular(12)),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text("Hello, $name",
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          Text(email,
+                              style: const TextStyle(fontSize: 13, color: Colors.black54)),
+                        ]),
+                        ElevatedButton.icon(
+                          onPressed: () async {
+                            if (profile == null) return;
+                            final updated = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => EditProfilePage(profile: profile!),
+                              ),
+                            );
+                            if (updated != null) setState(() => profile = updated);
+                          },
+                          icon: const Icon(Icons.edit, size: 16),
+                          label: const Text("Edit"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            foregroundColor: Colors.white,
+                            padding:
+                            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _option(Icons.credit_card, "Payment history",
+                        onTap: () => Navigator.push(context,
+                            MaterialPageRoute(builder: (_) => const PaymentHistoryPage(userId: '',)))),
+                    _option(Icons.location_on, "Address",
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => AddressPage(userId: widget.userId)))),
+                    _option(Icons.history, "Booking history",
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => BookingPage(userId: widget.userId)))),
+                    _option(Icons.star, "My rating",
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const MyRatingPage(workerId: '',)))),
+                    _option(Icons.lock, "Password",
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const ChangePasswordPage(userId: '',)))),
+                    _option(Icons.chat, "Help & Support",
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const ChatScreen()))),
+                    _option(Icons.logout, "Logout", onTap: logout),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
